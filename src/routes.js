@@ -78,20 +78,22 @@ router.put("/plan/:month/balance", (req, res) => {
 
 // Добавить элемент (затрату)
 router.post("/item", (req, res) => {
-  const { month, type, name, amount } = req.body;
+  const { month, type, name, amount, note } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
-  addItem(plan, type, { name, amount: Number(amount) });
+  addItem(plan, type, { name, amount: Number(amount), note: note || "" });
   savePlan(plan);
   res.json({ plan, calc: calculate(plan) });
 });
 
 // Обновить элемент
 router.put("/item/:itemId", (req, res) => {
-  const { month, type, name, amount } = req.body;
+  const { month, type, name, amount, note } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
-  updateItem(plan, type, req.params.itemId, { name, amount: Number(amount) });
+  const updates = { name, amount: Number(amount) };
+  if (note !== undefined) updates.note = note;
+  updateItem(plan, type, req.params.itemId, updates);
   savePlan(plan);
   res.json({ plan, calc: calculate(plan) });
 });
@@ -141,13 +143,14 @@ router.delete("/type", (req, res) => {
 
 // Обновить тип затрат
 router.put("/type", (req, res) => {
-  const { month, oldName, newName, budget, carryOver } = req.body;
+  const { month, oldName, newName, budget, carryOver, note } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
   const updates = {};
   if (newName !== undefined) updates.name = newName;
   if (budget !== undefined) updates.budget = budget;
   if (carryOver !== undefined) updates.carryOver = !!carryOver;
+  if (note !== undefined) updates.note = note;
   updateType(plan, oldName, updates);
   savePlan(plan);
   res.json({ plan, calc: calculate(plan) });

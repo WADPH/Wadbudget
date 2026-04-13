@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget Planner</title>
+  <title>Wadbudget</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
@@ -11,10 +11,11 @@
     /* Sidebar */
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
-      background: #1a1a2e; padding: 20px 0; overflow-y: auto;
-      border-right: 1px solid #2a2a4a; z-index: 100;
+      background: #1a1a2e; padding: 0; overflow: hidden;
+      border-right: 1px solid #2a2a4a; z-index: 100; display: flex; flex-direction: column;
     }
-    .sidebar h2 { color: #7c6ff7; padding: 0 20px 15px; font-size: 18px; border-bottom: 1px solid #2a2a4a; margin-bottom: 10px; }
+    .sidebar h2 { color: #7c6ff7; padding: 20px 20px 15px; font-size: 18px; border-bottom: 1px solid #2a2a4a; flex-shrink: 0; }
+    .sidebar .plans-list { flex: 1; overflow-y: auto; padding-bottom: 10px; }
     .sidebar .plan-item {
       padding: 10px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
       transition: background 0.2s;
@@ -28,7 +29,10 @@
     .sidebar .plan-item:hover .delete-plan-btn { opacity: 1; }
     .sidebar .plan-item .delete-plan-btn:hover { background: rgba(255,107,107,0.2); }
 
-    .new-plan-section { padding: 15px 20px; border-top: 1px solid #2a2a4a; margin-top: 10px; }
+    .new-plan-section {
+      padding: 15px 20px; border-top: 1px solid #2a2a4a; flex-shrink: 0;
+      background: #1a1a2e;
+    }
     .new-plan-section h3 { font-size: 14px; color: #aaa; margin-bottom: 10px; }
 
     .btn {
@@ -102,15 +106,21 @@
 
     /* Select arrow styling */
     select {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c6ff7' stroke-width='2' fill='none'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 10px center;
+      background-size: 12px 8px;
       padding-right: 30px !important;
     }
-    select:hover, select:focus {
+    select:hover {
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e0e0e0' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    }
+    select:focus {
+      border-color: #7c6ff7;
+      outline: none;
       background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e0e0e0' stroke-width='2' fill='none'/%3E%3C/svg%3E");
     }
 
@@ -136,6 +146,12 @@
       border-radius: 4px; font-size: 14px; width: 100%;
     }
     .items-table .item-name:focus { border-color: #7c6ff7; background: #0f0f0f; outline: none; }
+    .items-table .item-note {
+      background: transparent; border: 1px solid transparent; color: #888; padding: 3px 8px;
+      border-radius: 4px; font-size: 12px; width: 100%; font-style: italic;
+    }
+    .items-table .item-note:focus { border-color: #7c6ff7; background: #0f0f0f; outline: none; color: #e0e0e0; font-style: normal; }
+    .items-table .item-note::placeholder { color: #555; }
     .items-table .item-amount-input {
       background: transparent; border: 1px solid transparent; color: #7c6ff7; padding: 4px 8px;
       border-radius: 4px; font-size: 14px; width: 100px; text-align: right; font-weight: 500;
@@ -210,6 +226,22 @@
     /* After type balance */
     .after-balance { color: #aaa; font-size: 13px; }
 
+    /* Pie chart modal */
+    .pie-modal { width: 500px; max-width: 90vw; }
+    .pie-canvas { display: flex; justify-content: center; margin: 20px 0; }
+    .pie-canvas canvas { border-radius: 12px; }
+    .pie-legend { margin-top: 15px; }
+    .pie-legend-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+    .pie-legend-color { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+    .pie-legend-label { flex: 1; color: #e0e0e0; }
+    .pie-legend-value { color: #7c6ff7; font-weight: bold; }
+    .pie-toggle { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+    .pie-toggle button {
+      padding: 6px 16px; border: 1px solid #333; background: #0f0f0f; color: #aaa;
+      border-radius: 6px; cursor: pointer; font-size: 13px;
+    }
+    .pie-toggle button.active { background: #7c6ff7; color: #fff; border-color: #7c6ff7; }
+
     /* Responsive */
     @media (max-width: 768px) {
       .sidebar { width: 180px; }
@@ -219,8 +251,8 @@
 </head>
 <body>
   <div class="sidebar">
-    <h2>Budget Plans</h2>
-    <div id="plansList"></div>
+    <h2>Wadbudget Planner</h2>
+    <div class="plans-list" id="plansList"></div>
     <div class="new-plan-section">
       <h3>New Plan</h3>
       <div class="date-picker" id="newPlanDatePicker">
@@ -229,7 +261,7 @@
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
         <button class="btn btn-primary btn-small" onclick="createFromTemplate()" style="flex:1;">From Template</button>
-        <button class="btn btn-success btn-small" onclick="createEmptyPlan()" style="flex:1;">Empty</button>
+        <button class="btn btn-success btn-small" onclick="createEmptyPlan()" style="width:36px;padding:6px 10px;font-size:18px;" title="Create empty plan">+</button>
       </div>
     </div>
   </div>
@@ -346,6 +378,9 @@
               </div>
             </div>
             <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${formatMonth(getNextMonth(currentPlan.month))}</button>
+            <button class="btn btn-primary btn-small" onclick="showPieChart()" title="Pie Chart">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            </button>
           </div>
         </div>
       `;
@@ -361,7 +396,7 @@
           <div class="type-section">
             <div class="type-header">
               <div>
-                <h2>${type.name}</h2>
+                <h2>${type.name}${type.note ? `<span style="color:#888;font-size:13px;font-weight:normal;font-style:italic;margin-left:8px;">${escHtml(type.note)}</span>` : ''}</h2>
                 <div class="after-balance">After: ${afterBalance.toFixed(2)} ₼</div>
               </div>
               <div class="type-info">
@@ -373,7 +408,7 @@
               </div>
             </div>
             <table class="items-table">
-              <thead><tr><th style="width:30px;"></th><th>Name</th><th style="width:120px;text-align:right;">Amount (₼)</th><th style="width:40px;"></th></tr></thead>
+              <thead><tr><th style="width:30px;"></th><th style="width:20%">Name</th><th style="width:60%;">Note</th><th style="width:120px;text-align:right;">Amount (₼)</th><th style="width:40px;"></th></tr></thead>
               <tbody>
         `;
 
@@ -384,10 +419,11 @@
                 ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)"
                 ondragleave="onDragLeave(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
               <td><button class="btn-drag" title="Drag to reorder">&#9776;</button></td>
-              <td><input class="item-name" value="${escHtml(item.name)}" onchange="updateItem('${type.name}','${item.id}',this.value,null)"></td>
+              <td><input class="item-name" value="${escHtml(item.name)}" onchange="updateItem('${type.name}','${item.id}',this.value,null,null)"></td>
+              <td><input class="item-note" value="${escHtml(item.note || '')}" placeholder=" " onchange="updateItem('${type.name}','${item.id}',null,this.value,null)"></td>
               <td>
                 <div class="number-wrapper">
-                  <input type="number" class="item-amount-input" value="${item.amount}" onchange="updateItem('${type.name}','${item.id}',null,this.value)" step="1">
+                  <input type="number" class="item-amount-input" value="${item.amount}" onchange="updateItem('${type.name}','${item.id}',null,null,this.value)" step="1">
                   <div class="number-arrows">
                     <button onclick="adjustItemAmount(this,1)">▲</button>
                     <button onclick="adjustItemAmount(this,-1)">▼</button>
@@ -404,6 +440,7 @@
             </table>
             <div class="add-item-row">
               <input class="item-name-input" type="text" placeholder="New item name..." id="newItemName_${type.name}">
+              <input type="text" placeholder="Note..." id="newItemNote_${type.name}" style="width:130px;padding:8px 12px;background:#0f0f0f;border:1px solid #333;color:#888;border-radius:6px;font-size:13px;">
               <div class="number-wrapper" style="width:120px;">
                 <input class="item-amount-input" type="number" placeholder="Amount" id="newItemAmount_${type.name}" step="1" style="width:100%;text-align:right;">
                 <div class="number-arrows">
@@ -561,12 +598,13 @@
 
     async function addItem(typeName) {
       const nameInput = document.getElementById(`newItemName_${typeName}`);
+      const noteInput = document.getElementById(`newItemNote_${typeName}`);
       const amountInput = document.getElementById(`newItemAmount_${typeName}`);
       if (!nameInput.value.trim()) return;
 
       const res = await fetch(`${API}/item`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: nameInput.value.trim(), amount: Number(amountInput.value) || 0 })
+        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: nameInput.value.trim(), note: noteInput.value.trim(), amount: Number(amountInput.value) || 0 })
       });
       const data = await res.json();
       currentPlan = data.plan;
@@ -574,14 +612,15 @@
       renderPlan();
     }
 
-    async function updateItem(typeName, itemId, name, amount) {
+    async function updateItem(typeName, itemId, name, note, amount) {
       const item = currentPlan.types.find(t => t.name === typeName).items.find(i => i.id === itemId);
       const newName = name !== null ? name : item.name;
+      const newNote = note !== null ? note : (item.note || '');
       const newAmount = amount !== null ? Number(amount) : item.amount;
 
       const res = await fetch(`${API}/item/${itemId}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: newName, amount: newAmount })
+        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: newName, note: newNote, amount: newAmount })
       });
       const data = await res.json();
       currentPlan = data.plan;
@@ -718,20 +757,21 @@
         <h3>Edit Type</h3>
         <label>Type Name</label>
         <input type="text" id="modalEditTypeName" value="${escHtml(type.name)}">
+        <label>Note</label>
+        <input type="text" id="modalEditTypeNote" value="${escHtml(type.note || '')}" placeholder="Optional note...">
         <label class="custom-checkbox">
           <input type="checkbox" id="modalEditCarryOver" ${type.carryOver ? 'checked' : ''}>
           <span class="checkmark"></span>
           <span class="checkbox-label">Carry Over to next month</span>
         </label>
         <div class="modal-actions">
-          <button class="btn btn-small" onclick="hideModal()">Cancel</button>
           <button class="btn btn-small btn-primary" onclick="saveEditType(${typeIndex})">Save</button>
         </div>
       `);
       document.getElementById('modalEditTypeName').focus();
       document.getElementById('modalEditTypeName').select();
       document.getElementById('modalEditTypeName').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') saveEditType(typeIndex);
+        if (e.key === 'Enter') document.getElementById('modalEditTypeNote').focus();
       });
     }
 
@@ -740,10 +780,11 @@
       const newName = document.getElementById('modalEditTypeName').value.trim();
       if (!newName) return;
       const carryOver = document.getElementById('modalEditCarryOver').checked;
+      const note = document.getElementById('modalEditTypeNote').value.trim();
 
       const res = await fetch(`${API}/type`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, oldName, newName, carryOver })
+        body: JSON.stringify({ month: currentPlan.month, oldName, newName, carryOver, note })
       });
       const data = await res.json();
       currentPlan = data.plan;
@@ -788,9 +829,196 @@
       `);
     }
 
+    // Pie Chart
+    const PIE_COLORS = ['#7c6ff7','#2ecc71','#e74c3c','#f39c12','#3498db','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
+    let pieMode = 'percent';
+    let pieSegments = [];
+    let pieTotal = 0;
+
+    async function showPieChart() {
+      pieMode = 'percent';
+      const left = currentCalc.left;
+      const total = currentPlan.startBalance;
+
+      pieSegments = [];
+      for (const type of currentPlan.types) {
+        const amount = type.items.reduce((s, i) => s + i.amount, 0);
+        pieSegments.push({ name: type.name, amount });
+      }
+      pieSegments.push({ name: 'Left', amount: Math.max(left, 0) });
+      pieTotal = total;
+
+      renderPieModal();
+    }
+
+    function renderPieModal() {
+      let legendHtml = '';
+      pieSegments.forEach((seg, i) => {
+        const pct = pieTotal > 0 ? ((seg.amount / pieTotal) * 100).toFixed(1) : 0;
+        const value = pieMode === 'percent' ? `${pct}%` : `${seg.amount.toFixed(2)} ₼`;
+        legendHtml += `
+          <div class="pie-legend-item">
+            <div class="pie-legend-color" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
+            <span class="pie-legend-label">${escHtml(seg.name)}</span>
+            <span class="pie-legend-value">${value}</span>
+          </div>
+        `;
+      });
+
+      const modalHtml = `
+        <h3>Breakdown — ${formatMonth(currentPlan.month)}</h3>
+        <div class="pie-toggle">
+          <button class="${pieMode==='percent'?'active':''}" onclick="setPieMode('percent')">Percent</button>
+          <button class="${pieMode==='amount'?'active':''}" onclick="setPieMode('amount')">Amount</button>
+        </div>
+        <div class="pie-canvas">
+          <canvas id="pieCanvas" width="300" height="300"></canvas>
+        </div>
+        <div class="pie-legend">${legendHtml}</div>
+        <div class="modal-actions">
+          <button class="btn btn-small btn-primary" onclick="hideModal()">Close</button>
+        </div>
+      `;
+
+      showModal(modalHtml);
+      document.getElementById('modalContent').classList.add('pie-modal');
+      setTimeout(() => drawPieChart(), 50);
+    }
+
+    function setPieMode(mode) {
+      pieMode = mode;
+      renderPieModal();
+    }
+
+    function drawPieChart() {
+      const canvas = document.getElementById('pieCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const size = 300;
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      ctx.scale(dpr, dpr);
+
+      const cx = size / 2;
+      const cy = size / 2;
+      const r = Math.min(cx, cy) - 10;
+      const total = pieTotal;
+
+      ctx.clearRect(0, 0, size, size);
+
+      const MIN_LABEL_ANGLE = 0.25; // rad ~14deg
+      const pointerR = r + 20;
+
+      let startAngle = -Math.PI / 2;
+      const labelLines = [];
+
+      pieSegments.forEach((seg, i) => {
+        const sliceAngle = total > 0 ? (seg.amount / total) * 2 * Math.PI : 0;
+        if (sliceAngle <= 0) { startAngle += sliceAngle; return; }
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.fill();
+
+        const midAngle = startAngle + sliceAngle / 2;
+
+        if (sliceAngle > MIN_LABEL_ANGLE) {
+          // Label inside slice
+          const labelR = r * 0.65;
+          const lx = cx + Math.cos(midAngle) * labelR;
+          const ly = cy + Math.sin(midAngle) * labelR;
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 12px Segoe UI';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (pieMode === 'percent') {
+            const pct = ((seg.amount / total) * 100).toFixed(0);
+            ctx.fillText(`${pct}%`, lx, ly);
+          } else {
+            ctx.fillText(`${seg.amount.toFixed(0)} ₼`, lx, ly);
+          }
+        } else {
+          // Small slice — store for pointer label
+          labelLines.push({ angle: midAngle, startAngle, sliceAngle, seg, i, total });
+        }
+
+        startAngle += sliceAngle;
+      });
+
+      // Draw pointer lines and labels for small slices
+      labelLines.forEach(({ angle, seg, i, total }) => {
+        const edgeX = cx + Math.cos(angle) * r;
+        const edgeY = cy + Math.sin(angle) * r;
+        const endX = cx + Math.cos(angle) * pointerR;
+        const endY = cy + Math.sin(angle) * pointerR;
+
+        // Horizontal extension
+        const isLeft = Math.cos(angle) < 0;
+        const horizLen = 25;
+        const labelX = endX + (isLeft ? -horizLen : horizLen);
+        const labelY = endY;
+
+        ctx.strokeStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(edgeX, edgeY);
+        ctx.lineTo(endX, endY);
+        ctx.lineTo(labelX, labelY);
+        ctx.stroke();
+
+        // Dot
+        ctx.beginPath();
+        ctx.arc(endX, endY, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.fill();
+
+        // Label
+        const pct = ((seg.amount / total) * 100).toFixed(1);
+        const value = pieMode === 'percent' ? `${pct}%` : `${seg.amount.toFixed(1)} ₼`;
+        const text = `${escHtml(seg.name)}  ${value}`;
+
+        ctx.fillStyle = '#e0e0e0';
+        ctx.font = 'bold 13px Segoe UI';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = isLeft ? 'right' : 'left';
+        ctx.fillText(text, labelX, labelY);
+      });
+
+      // Center circle (donut)
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fill();
+
+      // Center text
+      ctx.fillStyle = '#7c6ff7';
+      ctx.font = 'bold 16px Segoe UI';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${total.toFixed(0)} ₼`, cx, cy - 8);
+      ctx.fillStyle = '#aaa';
+      ctx.font = '11px Segoe UI';
+      ctx.fillText('Total', cx, cy + 10);
+    }
+
     // Init
     initDatePickers();
-    loadPlansList();
+    loadPlansList().then(async () => {
+      // Auto-load latest plan
+      const res = await fetch(`${API}/plans`);
+      const plans = await res.json();
+      if (plans.length > 0) {
+        // Last plan in sorted list is the most recent
+        const latestMonth = plans[plans.length - 1].month;
+        loadPlan(latestMonth);
+      }
+    });
   </script>
 </body>
 </html>
