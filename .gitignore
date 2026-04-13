@@ -1,3 +1,7 @@
+# Manual Added
+
+data/*.json
+
 # Logs
 logs
 *.log
