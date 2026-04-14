@@ -1,4 +1,5 @@
 # Manual Added
+.qwen/
 data/*.json
 
 # Logs
