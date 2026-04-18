@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,12 +18,13 @@
     }
     .card {
       width: 100%;
-      max-width: 440px;
+      max-width: 460px;
       background: #1a1a2e;
       border: 1px solid #2a2a4a;
       border-radius: 14px;
       padding: 24px;
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      text-align: center;
     }
     h1 { margin: 0 0 8px; color: #7c6ff7; font-size: 26px; }
     p { margin: 0 0 16px; color: #b9b9cf; line-height: 1.45; }
@@ -31,9 +32,10 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 10px;
       width: 100%;
       text-decoration: none;
-      border: 1px solid #2a2a4a;
+      border: 1px solid #d6d6d6;
       border-radius: 10px;
       background: #fff;
       color: #202124;
@@ -42,18 +44,26 @@
       transition: transform 0.08s ease;
     }
     .btn:active { transform: scale(0.98); }
+    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
     .note { margin-top: 14px; font-size: 13px; color: #9b9bb5; }
   </style>
 </head>
 <body>
   <main class="card">
     <h1>Wadbudget</h1>
-    <p>Вход строго через Google SSO. Доступ выдается только email-адресам из списка разрешенных пользователей.</p>
-    <a class="btn" href="/auth/google">Войти через Google</a>
-    <p class="note">Если доступ отклонен, обратитесь к администратору для добавления вашего email в ALLOWED_USERS.</p>
+    <p>Sign in is available only via Google SSO. Access is granted only to emails included in the allowlist.</p>
+    <a class="btn" href="/auth/google" aria-label="Sign in with Google">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 4 1.5l2.7-2.6C17 3.3 14.7 2.4 12 2.4 6.9 2.4 2.8 6.5 2.8 11.6s4.1 9.2 9.2 9.2c5.3 0 8.8-3.7 8.8-8.9 0-.6-.1-1.1-.2-1.7H12z"/>
+        <path fill="#34A853" d="M3.7 7.9l3.2 2.3C7.8 8.1 9.7 6.7 12 6.7c1.9 0 3.2.8 4 1.5l2.7-2.6C17 3.3 14.7 2.4 12 2.4 8.2 2.4 4.9 4.6 3.7 7.9z"/>
+        <path fill="#FBBC05" d="M12 20.8c2.6 0 4.8-.8 6.4-2.3l-3-2.4c-.8.6-2 1-3.4 1-2.2 0-4.1-1.5-4.8-3.5l-3.3 2.5c1.2 2.9 4.5 4.7 8.1 4.7z"/>
+        <path fill="#4285F4" d="M20.8 11.9c0-.6-.1-1.1-.2-1.7H12v3.9h5.5c-.3 1.4-1.1 2.6-2.4 3.4l3 2.4c1.8-1.7 2.7-4.2 2.7-8z"/>
+      </svg>
+      <span>Sign in with Google</span>
+    </a>
+    <p class="note">If access is denied, contact your administrator to add your email to ALLOWED_USERS.</p>
   </main>
 
-  <!-- Google Identity Services script is loaded for policy/branding compliance -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>

@@ -150,7 +150,7 @@ export function setupAuth(app) {
       .status(403)
       .send(`
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -165,10 +165,10 @@ export function setupAuth(app) {
 </head>
 <body>
   <div class="card">
-    <h1>Доступ запрещен</h1>
-    <p>Аккаунт <strong>${email || "unknown"}</strong> отсутствует в списке разрешенных пользователей.</p>
-    <p>Запросите у администратора доступ к сайту (добавление email в ALLOWED_USERS).</p>
-    <a href="/auth/login">Назад ко входу</a>
+    <h1>Access denied</h1>
+    <p>Account <strong>${email || "unknown"}</strong> is not in the allowlist.</p>
+    <p>Please contact your administrator to request access (add your email to ALLOWED_USERS).</p>
+    <a href="/auth/login">Back to login</a>
   </div>
 </body>
 </html>`);
