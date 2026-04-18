@@ -48,7 +48,11 @@
     .btn-danger:hover { background: #c0392b; }
     .btn-small { padding: 5px 10px; font-size: 12px; }
     .btn-icon { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 18px; padding: 4px; }
-    .btn-icon:hover { color: #ff4444; }
+    .btn-icon.btn-icon-edit { color: #7c6ff7; }
+    .btn-icon.btn-icon-edit:hover { color: #a17cf0; }
+    .btn-icon.btn-icon-delete { color: #ff6b6b; }
+    .btn-icon.btn-icon-delete:hover { color: #ff4444; }
+    .btn-icon:hover { opacity: 0.85; }
     .btn-drag { background: none; border: none; color: #555; cursor: grab; font-size: 16px; padding: 4px; }
     .btn-drag:hover { color: #7c6ff7; }
     .btn-drag:active { cursor: grabbing; }
@@ -58,6 +62,9 @@
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     .header h1 { font-size: 28px; color: #7c6ff7; }
     .header .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .header .controls > * { display: flex; align-items: center; }
+    .header .controls button { min-height: 36px; padding: 8px 12px; }
+    .more-controls { display: flex; gap: 8px; align-items: center; }
     .header .start-balance {
       display: flex; align-items: center; gap: 10px;
     }
@@ -104,24 +111,37 @@
     }
     .number-arrows button:hover { background: #7c6ff7; color: #fff; }
 
+    /* Select wrapper */
+    .select-wrapper {
+      position: relative; display: inline-flex; align-items: center;
+    }
+    .select-wrapper::after {
+      content: '';
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #7c6ff7;
+      pointer-events: none;
+      transition: border-color 0.2s;
+    }
+    .select-wrapper:hover::after { border-top-color: #e0e0e0; }
+
     /* Select arrow styling */
     select {
       -webkit-appearance: none !important;
       -moz-appearance: none !important;
       appearance: none !important;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237c6ff7' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-image: none !important;
       background-repeat: no-repeat;
       background-position: right 10px center;
       background-size: 12px 8px;
       padding-right: 30px !important;
-    }
-    select:hover {
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e0e0e0' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-color: #1a1a2e !important;
     }
     select:focus {
       border-color: #7c6ff7;
       outline: none;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e0e0e0' stroke-width='2' fill='none'/%3E%3C/svg%3E");
     }
 
     /* Type sections */
@@ -242,22 +262,78 @@
     }
     .pie-toggle button.active { background: #7c6ff7; color: #fff; border-color: #7c6ff7; }
 
+    /* Hamburger */
+    .hamburger {
+      display: none; position: fixed; top: 12px; left: 12px; z-index: 200;
+      width: 40px; height: 40px; background: #1a1a2e; border: 1px solid #2a2a4a;
+      border-radius: 8px; cursor: pointer; color: #7c6ff7; font-size: 22px;
+      align-items: center; justify-content: center;
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 99;
+    }
+    .sidebar-overlay.visible { display: block; }
+
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { width: 180px; }
-      .main { margin-left: 180px; padding: 20px; }
+      .hamburger { display: flex; }
+      .sidebar {
+        transform: translateX(-100%); transition: transform 0.3s ease;
+        width: 260px; z-index: 150;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; padding: 15px; padding-top: 60px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .header .controls { gap: 8px; }
+      .header .controls > *:not(.more-controls) { display: none; }
+      .more-controls { display: flex !important; gap: 8px; }
+      .header .start-balance { width: 100%; }
+      .header .start-balance input { flex: 1; }
+
+      /* type-header: keep title and info on same row */
+      .type-header { flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .type-header > div:first-child { flex: 1 1 auto; min-width: 0; }
+      .type-header .type-info { flex: 0 1 auto; display: flex; gap: 6px; align-items: center; }
+
+      /* Table: hide note, compact name+amount */
+      .items-table th:nth-child(3), .items-table td:nth-child(3) { display: none; }
+      .items-table th:nth-child(2) { width: 55% !important; }
+      .items-table th:nth-child(4) { width: 35% !important; }
+
+      .add-item-row { flex-wrap: wrap; }
+      .add-item-row .item-name-input { min-width: 80px; }
+      .add-item-row input[type="text"]:not(.item-name-input) { width: 80px !important; min-width: 80px; }
+      .add-item-row .number-wrapper { width: 80px !important; }
+      .summary-bar { flex-wrap: wrap; gap: 15px; justify-content: center; }
+      .pie-modal { width: 95vw; }
+      .pie-canvas canvas { width: 250px !important; height: 250px !important; }
+      .number-wrapper { width: 90px !important; }
+      .number-wrapper input { width: 100% !important; }
     }
+
+    /* More button + modal controls */
+    .more-btn-wrap { display: none; }
+    .more-controls { display: flex; gap: 8px; align-items: center; }
+    .more-modal { width: 320px; max-width: 90vw; }
+    .more-modal .more-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .more-modal .more-row label { color: #aaa; font-size: 13px; white-space: nowrap; }
+    .more-modal .modal-actions { justify-content: center; }
+    .modal-actions.modal-actions-center { justify-content: center; }
+    .more-modal .modal-actions button { min-width: 160px; }
   </style>
 </head>
 <body>
-  <div class="sidebar">
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar" id="sidebar">
     <h2>Wadbudget Planner</h2>
     <div class="plans-list" id="plansList"></div>
     <div class="new-plan-section">
       <h3>New Plan</h3>
       <div class="date-picker" id="newPlanDatePicker">
-        <select id="newPlanMonth"></select>
-        <select id="newPlanYear"></select>
+        <span class="select-wrapper"><select id="newPlanMonth"></select></span>
+        <span class="select-wrapper"><select id="newPlanYear"></select></span>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
         <button class="btn btn-primary btn-small" onclick="createFromTemplate()" style="flex:1;">From Template</button>
@@ -322,6 +398,12 @@
       return `${String(nm).padStart(2, '0')}.${ny}`;
     }
 
+    function getNextMonthName(monthStr) {
+      const [m] = monthStr.split('.').map(Number);
+      const nextMonthIndex = m === 12 ? 0 : m;
+      return MONTHS[nextMonthIndex];
+    }
+
     function formatMonth(monthStr) {
       const [m, y] = monthStr.split('.');
       return `${MONTHS[parseInt(m) - 1]} ${y}`;
@@ -348,6 +430,7 @@
       currentCalc = data.calc;
       renderPlan();
       loadPlansList();
+      closeSidebar();
     }
 
     // Render plan
@@ -359,12 +442,12 @@
       let html = `
         <div class="header">
           <div class="date-picker">
-            <select id="planMonth" onchange="renameCurrentPlan()">
+            <span class="select-wrapper"><select id="planMonth" onchange="renameCurrentPlan()">
               ${MONTHS.map((m, i) => `<option value="${String(i+1).padStart(2,'0')}" ${String(i+1).padStart(2,'0')===pm?'selected':''}>${m}</option>`).join('')}
-            </select>
-            <select id="planYear" onchange="renameCurrentPlan()">
+            </select></span>
+            <span class="select-wrapper"><select id="planYear" onchange="renameCurrentPlan()">
               ${Array.from({length:10}, (_,i) => new Date().getFullYear()-2+i).map(y => `<option value="${y}" ${y==py?'selected':''}>${y}</option>`).join('')}
-            </select>
+            </select></span>
           </div>
           <div class="controls">
             <div class="start-balance">
@@ -377,10 +460,13 @@
                 </div>
               </div>
             </div>
-            <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${formatMonth(getNextMonth(currentPlan.month))}</button>
-            <button class="btn btn-primary btn-small" onclick="showPieChart()" title="Pie Chart">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
-            </button>
+                  <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${getNextMonthName(currentPlan.month)}</button>
+            <div class="more-controls">
+              <button class="btn btn-primary btn-small" onclick="showPieChart()" title="Pie Chart">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              </button>
+              <button class="btn btn-primary btn-small" onclick="showMoreModal()" title="More">…</button>
+            </div>
           </div>
         </div>
       `;
@@ -402,8 +488,13 @@
               <div class="type-info">
                 <div class="type-total">Total: ${total.toFixed(2)} ₼</div>
                 <div class="type-management">
-                  <button class="btn btn-small btn-primary" onclick="showEditTypeModal(${ti})">Edit</button>
-                  <button class="btn btn-small btn-danger" onclick="confirmDeleteType(${ti})">Delete</button>
+                  <button class="btn-icon btn-icon-edit" onclick="showEditTypeModal(${ti})" title="Edit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(180deg);">
+                      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"></path>
+                      <path d="M14.06 4.94l3.75 3.75"></path>
+                    </svg>
+                  </button>
+                  <button class="btn-icon btn-icon-delete" onclick="confirmDeleteType(${ti})" title="Delete">&times;</button>
                 </div>
               </div>
             </div>
@@ -448,7 +539,7 @@
                   <button onclick="adjustInput('newItemAmount_${type.name}',-1)">▼</button>
                 </div>
               </div>
-              <button class="btn btn-success btn-small" onclick="addItem('${type.name}')">+ Add</button>
+              <button class="btn btn-success btn-small" onclick="addItem('${type.name}')">+</button>
             </div>
           </div>
         `;
@@ -692,16 +783,42 @@
       currentCalc = data.calc;
       renderPlan();
       loadPlansList();
+      hideModal();
     }
 
     // Modal system
-    function showModal(html) {
-      document.getElementById('modalContent').innerHTML = html;
+    function showModal(html, extraClass = '') {
+      const modalContent = document.getElementById('modalContent');
+      modalContent.innerHTML = html;
+      modalContent.className = 'modal' + (extraClass ? ' ' + extraClass : '');
       document.getElementById('modalOverlay').classList.add('visible');
     }
 
     function hideModal() {
       document.getElementById('modalOverlay').classList.remove('visible');
+    }
+
+    function showMoreModal() {
+      showModal(`
+        <h3>More</h3>
+        <div class="more-row">
+          <label>Start Balance</label>
+          <div class="number-wrapper">
+            <input type="number" id="moreStartBalanceInput" value="${currentPlan.startBalance}" onchange="updateBalance(this.value)" step="1">
+            <div class="number-arrows">
+              <button onclick="adjustInput('moreStartBalanceInput',1)">▲</button>
+              <button onclick="adjustInput('moreStartBalanceInput',-1)">▼</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions modal-actions-center">
+          <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${getNextMonthName(currentPlan.month)}</button>
+        </div>
+        <div class="modal-actions modal-actions-center">
+          <button class="btn btn-primary btn-small" onclick="hideModal()">Close</button>
+        </div>
+      `, 'more-modal');
+      setTimeout(() => document.getElementById('moreStartBalanceInput')?.focus(), 50);
     }
 
     // Close modal on overlay click
@@ -1005,6 +1122,17 @@
       ctx.fillStyle = '#aaa';
       ctx.font = '11px Segoe UI';
       ctx.fillText('Total', cx, cy + 10);
+    }
+
+    // Mobile sidebar
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('visible');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('visible');
     }
 
     // Init
