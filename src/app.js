@@ -14,6 +14,14 @@ app.set("trust proxy", 1);
 
 app.use(express.json());
 
+// Prevent stale frontend assets after deployment/pull.
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 const { requireAuth } = setupAuth(app);
 
 app.use(requireAuth);
