@@ -1,6 +1,7 @@
 # Manual Added
 .qwen/
 data/*.json
+restart.sh
 
 # Logs
 logs
