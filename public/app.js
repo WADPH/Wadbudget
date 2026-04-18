@@ -14,20 +14,31 @@
 
     async function initAccountPanel() {
       try {
-        const res = await fetch(`${API}/auth/me`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!data.authenticated || !data.user) return;
-        currentUser = data.user;
-
         const emailEl = document.getElementById('accountEmail');
         const avatarEl = document.getElementById('accountAvatar');
+        if (avatarEl) avatarEl.src = createDefaultAvatarDataUrl('?');
+        if (emailEl) emailEl.textContent = 'Loading...';
+
+        const res = await fetch(`${API}/auth/me`);
+        if (!res.ok) {
+          if (emailEl) emailEl.textContent = 'Unknown user';
+          return;
+        }
+        const data = await res.json();
+        if (!data.authenticated || !data.user) {
+          if (emailEl) emailEl.textContent = 'Unknown user';
+          return;
+        }
+        currentUser = data.user;
+
         if (emailEl) emailEl.textContent = currentUser.email || '';
         if (avatarEl) {
           avatarEl.src = currentUser.picture || createDefaultAvatarDataUrl(currentUser.email || '?');
         }
       } catch (err) {
         console.error('Failed to load current user info', err);
+        const emailEl = document.getElementById('accountEmail');
+        if (emailEl) emailEl.textContent = 'Unknown user';
       }
     }
 
@@ -38,6 +49,7 @@
         window.location.href = '/auth/login';
       }
     }
+    window.logout = logout;
 
     // Init date pickers
     function initDatePickers() {

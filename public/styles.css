@@ -32,9 +32,18 @@
       padding: 14px 16px 16px;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       background: #1a1a2e;
       flex-shrink: 0;
+    }
+    .account-user {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
     }
     .account-avatar-wrap {
       width: 40px;
@@ -58,8 +67,9 @@
       color: #c9c9db;
       font-size: 12px;
       line-height: 1.25;
+      text-align: center;
       overflow-wrap: anywhere;
-      flex: 1;
+      width: 100%;
     }
     .account-logout-btn {
       border: none;
@@ -263,7 +273,7 @@
     .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
 
     /* Custom checkbox */
-    .custom-checkbox {
+    .modal label.custom-checkbox {
       display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;
       margin-bottom: 12px;
     }
