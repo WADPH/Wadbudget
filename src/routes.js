@@ -120,10 +120,10 @@ router.post("/reorder", (req, res) => {
 
 // Добавить тип затрат
 router.post("/type", (req, res) => {
-  const { month, typeName, budget, carryOver } = req.body;
+  const { month, typeName, budget, carryOver, color } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
-  addType(plan, typeName, budget || 0);
+  addType(plan, typeName, budget || 0, color || "#7c6ff7");
   if (carryOver !== undefined) {
     updateType(plan, typeName, { carryOver: !!carryOver });
   }
@@ -143,12 +143,13 @@ router.delete("/type", (req, res) => {
 
 // Обновить тип затрат
 router.put("/type", (req, res) => {
-  const { month, oldName, newName, budget, carryOver, note } = req.body;
+  const { month, oldName, newName, budget, carryOver, note, color } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
   const updates = {};
   if (newName !== undefined) updates.name = newName;
   if (budget !== undefined) updates.budget = budget;
+  if (color !== undefined) updates.color = color;
   if (carryOver !== undefined) updates.carryOver = !!carryOver;
   if (note !== undefined) updates.note = note;
   updateType(plan, oldName, updates);

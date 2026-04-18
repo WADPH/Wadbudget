@@ -27,6 +27,58 @@
       background: #1a1a2e;
     }
     .new-plan-section h3 { font-size: 14px; color: #aaa; margin-bottom: 10px; }
+    .account-panel {
+      border-top: 1px solid #2a2a4a;
+      padding: 14px 16px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #1a1a2e;
+      flex-shrink: 0;
+    }
+    .account-avatar-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: #2a2a4a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #3a3a62;
+      flex-shrink: 0;
+    }
+    .account-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .account-email {
+      color: #c9c9db;
+      font-size: 12px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+      flex: 1;
+    }
+    .account-logout-btn {
+      border: none;
+      background: transparent;
+      color: #9f9fb9;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color .2s, background .2s;
+      flex-shrink: 0;
+    }
+    .account-logout-btn:hover {
+      color: #ff4d4d;
+      background: rgba(255, 77, 77, 0.12);
+    }
 
     .btn {
       padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
@@ -203,6 +255,11 @@
       width: 100%; padding: 8px 12px; background: #0f0f0f; border: 1px solid #333; color: #e0e0e0;
       border-radius: 6px; margin-bottom: 12px;
     }
+    .modal input[type="color"] {
+      height: 38px;
+      padding: 4px;
+      cursor: pointer;
+    }
     .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
 
     /* Custom checkbox */
@@ -213,7 +270,7 @@
     .custom-checkbox input { display: none; }
     .custom-checkbox .checkmark {
       width: 20px; height: 20px; background: #0f0f0f; border: 2px solid #333; border-radius: 4px;
-      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
     }
     .custom-checkbox input:checked ~ .checkmark {
       background: #7c6ff7; border-color: #7c6ff7;
@@ -222,7 +279,14 @@
       content: '\2713'; color: #fff; font-size: 14px; opacity: 0; transition: opacity 0.2s;
     }
     .custom-checkbox input:checked ~ .checkmark::after { opacity: 1; }
-    .custom-checkbox .checkbox-label { color: #e0e0e0; font-size: 14px; }
+    .custom-checkbox .checkbox-label {
+      color: #e0e0e0;
+      font-size: 14px;
+      line-height: 20px;
+      display: inline-flex;
+      align-items: center;
+      margin: 0;
+    }
 
     .no-plan { text-align: center; padding: 60px 20px; color: #666; }
     .no-plan h2 { margin-bottom: 15px; }

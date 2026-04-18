@@ -57,10 +57,11 @@ export function reorderItems(plan, typeName, itemIds) {
   return plan;
 }
 
-export function addType(plan, typeName, budget = 0) {
+export function addType(plan, typeName, budget = 0, color = "#7c6ff7") {
   plan.types.push({
     name: typeName,
     budget,
+    color,
     carryOver: false,
     items: []
   });
@@ -87,6 +88,7 @@ export function createNextMonth(plan, newMonth) {
     types: plan.types.map(type => ({
       name: type.name,
       budget: type.budget || 0,
+      color: type.color || "#7c6ff7",
       carryOver: type.carryOver || false,
       items: type.carryOver
         ? type.items.map(i => ({ ...i, id: Date.now().toString() + Math.random().toString(36).slice(2, 8) }))

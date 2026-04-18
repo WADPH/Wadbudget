@@ -1,7 +1,43 @@
 ﻿const API = '';
     const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const LEFT_AMOUNT_COLOR = '#2ecc71';
+    const DEFAULT_TYPE_COLOR = '#7c6ff7';
     let currentPlan = null;
     let currentCalc = null;
+    let currentUser = null;
+
+    function createDefaultAvatarDataUrl(email = '?') {
+      const first = (email.trim().charAt(0) || '?').toUpperCase();
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="100%" height="100%" fill="#2a2a4a"/><text x="50%" y="56%" text-anchor="middle" font-family="Segoe UI,Tahoma,sans-serif" font-size="34" fill="#d7d7eb">${first}</text></svg>`;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    async function initAccountPanel() {
+      try {
+        const res = await fetch(`${API}/auth/me`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.authenticated || !data.user) return;
+        currentUser = data.user;
+
+        const emailEl = document.getElementById('accountEmail');
+        const avatarEl = document.getElementById('accountAvatar');
+        if (emailEl) emailEl.textContent = currentUser.email || '';
+        if (avatarEl) {
+          avatarEl.src = currentUser.picture || createDefaultAvatarDataUrl(currentUser.email || '?');
+        }
+      } catch (err) {
+        console.error('Failed to load current user info', err);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch(`${API}/auth/logout`, { method: 'POST' });
+      } finally {
+        window.location.href = '/auth/login';
+      }
+    }
 
     // Init date pickers
     function initDatePickers() {
@@ -450,6 +486,8 @@
         <h3>Add Type</h3>
         <label>Type Name</label>
         <input type="text" id="modalTypeName" placeholder="e.g. Savings" autofocus>
+        <label>Type Color</label>
+        <input type="color" id="modalTypeColor" value="${DEFAULT_TYPE_COLOR}">
         <label class="custom-checkbox">
           <input type="checkbox" id="modalCarryOver">
           <span class="checkmark"></span>
@@ -469,11 +507,12 @@
     async function addTypeFromModal() {
       const name = document.getElementById('modalTypeName').value.trim();
       if (!name) return;
+      const color = document.getElementById('modalTypeColor').value || DEFAULT_TYPE_COLOR;
       const carryOver = document.getElementById('modalCarryOver').checked;
 
       const res = await fetch(`${API}/type`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, typeName: name, budget: 0, carryOver })
+        body: JSON.stringify({ month: currentPlan.month, typeName: name, budget: 0, carryOver, color })
       });
       const data = await res.json();
       currentPlan = data.plan;
@@ -488,6 +527,8 @@
         <h3>Edit Type</h3>
         <label>Type Name</label>
         <input type="text" id="modalEditTypeName" value="${escHtml(type.name)}">
+        <label>Type Color</label>
+        <input type="color" id="modalEditTypeColor" value="${escHtml(type.color || DEFAULT_TYPE_COLOR)}">
         <label>Note</label>
         <input type="text" id="modalEditTypeNote" value="${escHtml(type.note || '')}" placeholder="Optional note...">
         <label class="custom-checkbox">
@@ -511,11 +552,12 @@
       const newName = document.getElementById('modalEditTypeName').value.trim();
       if (!newName) return;
       const carryOver = document.getElementById('modalEditCarryOver').checked;
+      const color = document.getElementById('modalEditTypeColor').value || DEFAULT_TYPE_COLOR;
       const note = document.getElementById('modalEditTypeNote').value.trim();
 
       const res = await fetch(`${API}/type`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, oldName, newName, carryOver, note })
+        body: JSON.stringify({ month: currentPlan.month, oldName, newName, carryOver, note, color })
       });
       const data = await res.json();
       currentPlan = data.plan;
@@ -561,7 +603,6 @@
     }
 
     // Pie Chart
-    const PIE_COLORS = ['#7c6ff7','#2ecc71','#e74c3c','#f39c12','#3498db','#9b59b6','#1abc9c','#e67e22','#e91e63','#00bcd4'];
     let pieMode = 'percent';
     let pieSegments = [];
     let pieTotal = 0;
@@ -574,9 +615,9 @@
       pieSegments = [];
       for (const type of currentPlan.types) {
         const amount = type.items.reduce((s, i) => s + i.amount, 0);
-        pieSegments.push({ name: type.name, amount });
+        pieSegments.push({ name: type.name, amount, color: type.color || DEFAULT_TYPE_COLOR });
       }
-      pieSegments.push({ name: 'Left', amount: Math.max(left, 0) });
+      pieSegments.push({ name: 'Left', amount: Math.max(left, 0), color: LEFT_AMOUNT_COLOR });
       pieTotal = total;
 
       renderPieModal();
@@ -584,12 +625,12 @@
 
     function renderPieModal() {
       let legendHtml = '';
-      pieSegments.forEach((seg, i) => {
+      pieSegments.forEach((seg) => {
         const pct = pieTotal > 0 ? ((seg.amount / pieTotal) * 100).toFixed(1) : 0;
         const value = pieMode === 'percent' ? `${pct}%` : `${seg.amount.toFixed(2)} ₼`;
         legendHtml += `
           <div class="pie-legend-item">
-            <div class="pie-legend-color" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></div>
+            <div class="pie-legend-color" style="background:${seg.color}"></div>
             <span class="pie-legend-label">${escHtml(seg.name)}</span>
             <span class="pie-legend-value">${value}</span>
           </div>
@@ -654,7 +695,7 @@
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, r, startAngle, startAngle + sliceAngle);
         ctx.closePath();
-        ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.fillStyle = seg.color;
         ctx.fill();
 
         const midAngle = startAngle + sliceAngle / 2;
@@ -695,7 +736,7 @@
         const labelX = endX + (isLeft ? -horizLen : horizLen);
         const labelY = endY;
 
-        ctx.strokeStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.strokeStyle = seg.color;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(edgeX, edgeY);
@@ -706,7 +747,7 @@
         // Dot
         ctx.beginPath();
         ctx.arc(endX, endY, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.fillStyle = seg.color;
         ctx.fill();
 
         // Label
@@ -751,6 +792,7 @@
 
     // Init
     initDatePickers();
+    initAccountPanel();
     loadPlansList().then(async () => {
       // Auto-load latest plan
       const res = await fetch(`${API}/plans`);
