@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wadbudget Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, #20203a 0%, #0f0f0f 55%);
+      color: #e0e0e0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      padding: 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+    h1 { margin: 0 0 8px; color: #7c6ff7; font-size: 26px; }
+    p { margin: 0 0 16px; color: #b9b9cf; line-height: 1.45; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-decoration: none;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      background: #fff;
+      color: #202124;
+      padding: 12px 14px;
+      font-weight: 600;
+      transition: transform 0.08s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .note { margin-top: 14px; font-size: 13px; color: #9b9bb5; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Wadbudget</h1>
+    <p>Вход строго через Google SSO. Доступ выдается только email-адресам из списка разрешенных пользователей.</p>
+    <a class="btn" href="/auth/google">Войти через Google</a>
+    <p class="note">Если доступ отклонен, обратитесь к администратору для добавления вашего email в ALLOWED_USERS.</p>
+  </main>
+
+  <!-- Google Identity Services script is loaded for policy/branding compliance -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</body>
+</html>
