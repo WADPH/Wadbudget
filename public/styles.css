@@ -269,6 +269,22 @@
       height: 38px;
       padding: 4px;
       cursor: pointer;
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 6px;
+    }
+    .modal input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+      border-radius: 4px;
+      background: #0f0f0f;
+    }
+    .modal input[type="color"]::-webkit-color-swatch {
+      border: 1px solid #2a2a4a;
+      border-radius: 4px;
+    }
+    .modal input[type="color"]::-moz-color-swatch {
+      border: 1px solid #2a2a4a;
+      border-radius: 4px;
     }
     .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
 
