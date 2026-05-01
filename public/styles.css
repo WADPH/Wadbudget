@@ -7,7 +7,20 @@
       background: #1a1a2e; padding: 0; overflow: hidden;
       border-right: 1px solid #2a2a4a; z-index: 100; display: flex; flex-direction: column;
     }
-    .sidebar h2 { color: #7c6ff7; padding: 20px 20px 15px; font-size: 18px; border-bottom: 1px solid #2a2a4a; flex-shrink: 0; }
+    .sidebar-brand {
+      padding: 16px 20px 14px;
+      border-bottom: 1px solid #2a2a4a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .sidebar-brand-image {
+      width: min(100%, 170px);
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
     .sidebar .plans-list { flex: 1; overflow-y: auto; padding-bottom: 10px; }
     .sidebar .plan-item {
       padding: 10px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;

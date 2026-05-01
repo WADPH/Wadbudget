@@ -663,7 +663,7 @@
       });
 
       const modalHtml = `
-        <h3>Breakdown вЂ” ${formatMonth(currentPlan.month)}</h3>
+        <h3>Breakdown — ${formatMonth(currentPlan.month)}</h3>
         <div class="pie-toggle">
           <button class="${pieMode==='percent'?'active':''}" onclick="setPieMode('percent')">Percent</button>
           <button class="${pieMode==='amount'?'active':''}" onclick="setPieMode('amount')">Amount</button>
@@ -741,7 +741,7 @@
             ctx.fillText(`${seg.amount.toFixed(0)} ₼`, lx, ly);
           }
         } else {
-          // Small slice вЂ” store for pointer label
+          // Small slice — store for pointer label
           labelLines.push({ angle: midAngle, startAngle, sliceAngle, seg, i, total });
         }
 
