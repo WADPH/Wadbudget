@@ -78,21 +78,22 @@ router.put("/plan/:month/balance", (req, res) => {
 
 // Добавить элемент (затрату)
 router.post("/item", (req, res) => {
-  const { month, type, name, amount, note } = req.body;
+  const { month, type, name, amount, note, paid } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
-  addItem(plan, type, { name, amount: Number(amount), note: note || "" });
+  addItem(plan, type, { name, amount: Number(amount), note: note || "", paid: !!paid });
   savePlan(plan);
   res.json({ plan, calc: calculate(plan) });
 });
 
 // Обновить элемент
 router.put("/item/:itemId", (req, res) => {
-  const { month, type, name, amount, note } = req.body;
+  const { month, type, name, amount, note, paid } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
   const updates = { name, amount: Number(amount) };
   if (note !== undefined) updates.note = note;
+  if (paid !== undefined) updates.paid = !!paid;
   updateItem(plan, type, req.params.itemId, updates);
   savePlan(plan);
   res.json({ plan, calc: calculate(plan) });

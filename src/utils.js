@@ -20,13 +20,17 @@ export function loadPlan(month, migrate = true) {
     return null;
   }
   const plan = JSON.parse(fs.readFileSync(p, "utf-8"));
-  // Migrate: ensure all items have IDs
+  // Migrate: ensure all items have IDs and paid flag
   if (migrate) {
     let changed = false;
     for (const type of plan.types) {
       for (const item of type.items) {
         if (!item.id) {
           item.id = `legacy_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          changed = true;
+        }
+        if (typeof item.paid !== "boolean") {
+          item.paid = false;
           changed = true;
         }
       }

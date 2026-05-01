@@ -25,7 +25,7 @@ export function addItem(plan, typeName, item) {
   const type = plan.types.find(t => t.name === typeName);
   if (!type) throw new Error("Type not found");
 
-  type.items.push({ id: Date.now().toString() + Math.random().toString(36).slice(2, 8), ...item });
+  type.items.push({ id: Date.now().toString() + Math.random().toString(36).slice(2, 8), paid: false, ...item });
   return plan;
 }
 
@@ -91,7 +91,7 @@ export function createNextMonth(plan, newMonth) {
       color: type.color || "#7c6ff7",
       carryOver: type.carryOver || false,
       items: type.carryOver
-        ? type.items.map(i => ({ ...i, id: Date.now().toString() + Math.random().toString(36).slice(2, 8) }))
+        ? type.items.map(i => ({ ...i, id: Date.now().toString() + Math.random().toString(36).slice(2, 8), paid: false }))
         : []
     }))
   };

@@ -108,9 +108,18 @@
     .btn-icon.btn-icon-delete { color: #ff6b6b; }
     .btn-icon.btn-icon-delete:hover { color: #ff4444; }
     .btn-icon:hover { opacity: 0.85; }
-    .btn-drag { background: none; border: none; color: #555; cursor: grab; font-size: 16px; padding: 4px; }
-    .btn-drag:hover { color: #7c6ff7; }
-    .btn-drag:active { cursor: grabbing; }
+    .item-paid-toggle { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+    .item-paid-toggle input { display: none; }
+    .item-paid-check {
+      width: 16px; height: 16px; border-radius: 5px; border: 1px solid #3c3c58; background: #121224;
+      position: relative; transition: all .2s ease;
+    }
+    .item-paid-check::after {
+      content: ''; position: absolute; left: 4px; top: 1px; width: 5px; height: 9px;
+      border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); opacity: 0; transition: opacity .2s ease;
+    }
+    .item-paid-toggle input:checked + .item-paid-check { background: #2ecc71; border-color: #2ecc71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .14); }
+    .item-paid-toggle input:checked + .item-paid-check::after { opacity: 1; }
 
     /* Main content */
     .main { margin-left: 240px; padding: 30px; }
@@ -373,7 +382,8 @@
 
       /* Table: hide note, compact name+amount */
       .items-table th:nth-child(3), .items-table td:nth-child(3) { display: none; }
-      .items-table th:nth-child(2) { width: 55% !important; }
+      .items-table th:nth-child(1) { width: 36px !important; }
+      .items-table th:nth-child(2) { width: 50% !important; }
       .items-table th:nth-child(4) { width: 35% !important; }
 
       .add-item-row { flex-wrap: wrap; }
@@ -381,6 +391,7 @@
       .add-item-row input[type="text"]:not(.item-name-input) { width: 80px !important; min-width: 80px; }
       .add-item-row .number-wrapper { width: 80px !important; }
       .summary-bar { flex-wrap: wrap; gap: 15px; justify-content: center; }
+      .summary-mode-wrap { margin-top: 12px; }
       .pie-modal { width: 95vw; }
       .pie-canvas canvas { width: 250px !important; height: 250px !important; }
       .number-wrapper { width: 90px !important; }
@@ -404,3 +415,8 @@
 
 
 
+    .summary-mode-wrap { margin: 16px 0 10px; display: flex; justify-content: center; }
+    .summary-mode-btn {
+      border: 1px solid #2f2f4f; background: #131325; color: #b9b9cd; padding: 8px 12px; border-radius: 999px; cursor: pointer; font-size: 12px;
+    }
+    .summary-mode-btn.active { background: #1e3a2c; border-color: #2ecc71; color: #d6ffe9; }

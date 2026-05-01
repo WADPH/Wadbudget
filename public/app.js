@@ -5,6 +5,7 @@
     let currentPlan = null;
     let currentCalc = null;
     let currentUser = null;
+    let summaryPaidOnly = false;
 
     function createDefaultAvatarDataUrl(email = '?') {
       const first = (email.trim().charAt(0) || '?').toUpperCase();
@@ -185,7 +186,7 @@
               </div>
             </div>
             <table class="items-table">
-              <thead><tr><th style="width:30px;"></th><th style="width:20%">Name</th><th style="width:60%;">Note</th><th style="width:120px;text-align:right;">Amount (₼)</th><th style="width:40px;"></th></tr></thead>
+              <thead><tr><th style="width:34px;">Paid</th><th style="width:20%">Name</th><th style="width:60%;">Note</th><th style="width:120px;text-align:right;">Amount (₼)</th><th style="width:40px;"></th></tr></thead>
               <tbody>
         `;
 
@@ -195,7 +196,7 @@
             <tr draggable="true" data-type-index="${ti}" data-item-index="${ii}"
                 ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)"
                 ondragleave="onDragLeave(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">
-              <td><button class="btn-drag" title="Drag to reorder">&#9776;</button></td>
+              <td><label class="item-paid-toggle" title="Paid"><input type="checkbox" ${item.paid ? 'checked' : ''} onchange="toggleItemPaid('${type.name}','${item.id}',this.checked)"><span class="item-paid-check"></span></label></td>
               <td><input class="item-name" value="${escHtml(item.name)}" onchange="updateItem('${type.name}','${item.id}',this.value,null,null)"></td>
               <td><input class="item-note" value="${escHtml(item.note || '')}" placeholder=" " onchange="updateItem('${type.name}','${item.id}',null,this.value,null)"></td>
               <td>
@@ -226,11 +227,11 @@
       }
 
       // Summary bar
-      html += `<div class="summary-bar">`;
+      html += `<div class="summary-mode-wrap"><button class="summary-mode-btn ${summaryPaidOnly ? 'active' : ''}" onclick="toggleSummaryPaidOnly()">${summaryPaidOnly ? 'Mode: Paid only' : 'Mode: All expenses'}</button></div><div class="summary-bar">`;
 
       runningBalance = currentPlan.startBalance;
       for (const type of currentPlan.types) {
-        const total = type.items.reduce((s, i) => s + i.amount, 0);
+        const total = type.items.reduce((s, i) => (summaryPaidOnly && !i.paid ? s : s + i.amount), 0);
         html += `
           <div class="summary-item">
             <div class="label">Total ${type.name}</div>
@@ -369,19 +370,31 @@
       renderPlan();
     }
 
-    async function updateItem(typeName, itemId, name, note, amount) {
+    async function updateItem(typeName, itemId, name, note, amount, paid = null) {
       const item = currentPlan.types.find(t => t.name === typeName).items.find(i => i.id === itemId);
       const newName = name !== null ? name : item.name;
       const newNote = note !== null ? note : (item.note || '');
       const newAmount = amount !== null ? Number(amount) : item.amount;
+      const newPaid = paid !== null ? !!paid : !!item.paid;
 
       const res = await fetch(`${API}/item/${itemId}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: newName, note: newNote, amount: newAmount })
+        body: JSON.stringify({ month: currentPlan.month, type: typeName, name: newName, note: newNote, amount: newAmount, paid: newPaid })
       });
       const data = await res.json();
       currentPlan = data.plan;
       currentCalc = data.calc;
+      renderPlan();
+    }
+
+    async function toggleItemPaid(typeName, itemId, paid) {
+      const item = currentPlan.types.find(t => t.name === typeName).items.find(i => i.id === itemId);
+      if (!item) return;
+      await updateItem(typeName, itemId, item.name, item.note || '', item.amount, paid);
+    }
+
+    function toggleSummaryPaidOnly() {
+      summaryPaidOnly = !summaryPaidOnly;
       renderPlan();
     }
 
