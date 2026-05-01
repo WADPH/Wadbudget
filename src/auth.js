@@ -41,6 +41,15 @@ function isApiPath(pathname) {
   return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
+function isPublicAuthAsset(pathname) {
+  const publicPaths = new Set([
+    "/loginDark.png",
+    "/logo.png",
+    "/favicon.ico"
+  ]);
+  return publicPaths.has(pathname);
+}
+
 export function setupAuth(app) {
   const clientId = getEnv("CLIENT_ID", "GOOGLE_CLIENT_ID");
   const clientSecret = getEnv("CLIENT_SECRET", "GOOGLE_CLIENT_SECRET");
@@ -189,6 +198,7 @@ export function setupAuth(app) {
   app.use("/auth", authRouter);
 
   function requireAuth(req, res, next) {
+    if (isPublicAuthAsset(req.path)) return next();
     if (req.session?.user?.email) return next();
 
     if (isApiPath(req.path)) {
@@ -203,4 +213,3 @@ export function setupAuth(app) {
 
   return { requireAuth };
 }
-
