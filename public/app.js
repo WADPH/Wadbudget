@@ -399,13 +399,15 @@
       `;
     }
 
-    async function createEmptyPlan() {
-      const month = getNewPlanDate();
-
+    async function createPlanById(planId) {
       const res = await fetch(`${API}/plan`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month, startBalance: 0, types: [] })
+        body: JSON.stringify({ month: planId, startBalance: 0, types: [] })
       });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to create plan');
+      }
       const data = await res.json();
       currentPlan = data.plan;
       currentCalc = data.calc;
@@ -413,26 +415,15 @@
       loadPlansList();
     }
 
-    async function createFromTemplate() {
-      const newMonth = getNewPlanDate();
-      if (!currentPlan) return alert('Select a template plan first');
-
+    async function duplicatePlanTo(targetMonth) {
       const res = await fetch(`${API}/next-month`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month })
+        body: JSON.stringify({ month: currentPlan.month, targetMonth })
       });
-      const data = await res.json();
-      currentPlan = data.plan;
-      currentCalc = data.calc;
-      renderPlan();
-      loadPlansList();
-    }
-
-    async function duplicateToNextMonth() {
-      const res = await fetch(`${API}/next-month`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ month: currentPlan.month })
-      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to copy plan');
+      }
       const data = await res.json();
       currentPlan = data.plan;
       currentCalc = data.calc;
