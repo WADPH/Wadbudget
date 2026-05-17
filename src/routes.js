@@ -1,5 +1,5 @@
 import express from "express";
-import { loadPlan, savePlan, listPlans, deletePlan, renamePlan } from "./utils.js";
+import { loadPlan, savePlan, listPlans, deletePlan, renamePlan, existsPlan } from "./utils.js";
 import {
   calculate,
   addItem,
@@ -35,6 +35,12 @@ router.get("/plan/:month", (req, res) => {
 // Создать новый план
 router.post("/plan", (req, res) => {
   const { month, startBalance, types } = req.body;
+  if (!month || typeof month !== "string") {
+    return res.status(400).json({ error: "Invalid plan id" });
+  }
+  if (existsPlan(month)) {
+    return res.status(409).json({ error: "Plan already exists" });
+  }
   const plan = {
     month,
     startBalance: startBalance || 0,
@@ -57,6 +63,9 @@ router.put("/plan/:month", (req, res) => {
   const plan = loadPlan(req.params.month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
   if (newMonth && newMonth !== req.params.month) {
+    if (existsPlan(newMonth)) {
+      return res.status(409).json({ error: "Plan already exists" });
+    }
     renamePlan(req.params.month, newMonth);
     plan.month = newMonth;
   }
@@ -160,19 +169,25 @@ router.put("/type", (req, res) => {
 
 // Создать план на следующий месяц
 router.post("/next-month", (req, res) => {
-  const { month } = req.body;
+  const { month, targetMonth } = req.body;
   const plan = loadPlan(month);
   if (!plan) return res.status(404).json({ error: "Plan not found" });
 
-  // Авто-расчёт следующего месяца
-  const [m, y] = month.split(".").map(Number);
-  let nextM = m + 1;
-  let nextY = y;
-  if (nextM > 12) {
-    nextM = 1;
-    nextY++;
+  let newMonth = targetMonth;
+  if (!newMonth) {
+    const [m, y] = month.split(".").map(Number);
+    let nextM = m + 1;
+    let nextY = y;
+    if (nextM > 12) {
+      nextM = 1;
+      nextY++;
+    }
+    newMonth = `${String(nextM).padStart(2, "0")}.${nextY}`;
   }
-  const newMonth = `${String(nextM).padStart(2, "0")}.${nextY}`;
+
+  if (existsPlan(newMonth)) {
+    return res.status(409).json({ error: "Plan already exists" });
+  }
 
   const newPlan = createNextMonth(plan, newMonth);
   savePlan(newPlan);

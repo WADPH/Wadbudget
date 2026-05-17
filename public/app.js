@@ -52,36 +52,6 @@
     }
     window.logout = logout;
 
-    // Init date pickers
-    function initDatePickers() {
-      const now = new Date();
-      const curM = now.getMonth() + 1;
-      const curY = now.getFullYear();
-
-      // New plan date picker
-      const mSel = document.getElementById('newPlanMonth');
-      const ySel = document.getElementById('newPlanYear');
-      MONTHS.forEach((m, i) => {
-        const opt = document.createElement('option');
-        opt.value = String(i + 1).padStart(2, '0');
-        opt.textContent = m;
-        if (i + 1 === curM) opt.selected = true;
-        mSel.appendChild(opt);
-      });
-      for (let y = curY - 2; y <= curY + 5; y++) {
-        const opt = document.createElement('option');
-        opt.value = y;
-        opt.textContent = y;
-        if (y === curY) opt.selected = true;
-        ySel.appendChild(opt);
-      }
-    }
-
-    function getNewPlanDate() {
-      const m = document.getElementById('newPlanMonth').value;
-      const y = document.getElementById('newPlanYear').value;
-      return `${m}.${y}`;
-    }
 
     function getNextMonth(monthStr) {
       const [m, y] = monthStr.split('.').map(Number);
@@ -96,9 +66,14 @@
       return MONTHS[nextMonthIndex];
     }
 
+    function isDatePlanId(id) { return /^\d{2}\.\d{4}$/.test(id); }
+
     function formatMonth(monthStr) {
-      const [m, y] = monthStr.split('.');
-      return `${MONTHS[parseInt(m) - 1]} ${y}`;
+      if (isDatePlanId(monthStr)) {
+        const [m, y] = monthStr.split(".");
+        return `${MONTHS[parseInt(m) - 1]} ${y}`;
+      }
+      return monthStr;
     }
 
     // Load plans list
@@ -130,10 +105,11 @@
       if (!currentPlan) return;
 
       const [pm, py] = currentPlan.month.split('.');
+      const isDatePlan = isDatePlanId(currentPlan.month);
 
       let html = `
         <div class="header">
-          <div class="date-picker">
+          <div class="date-picker" style="${isDatePlan ? '' : 'display:none;'}">
             <span class="select-wrapper"><select id="planMonth" onchange="renameCurrentPlan()">
               ${MONTHS.map((m, i) => `<option value="${String(i+1).padStart(2,'0')}" ${String(i+1).padStart(2,'0')===pm?'selected':''}>${m}</option>`).join('')}
             </select></span>
@@ -148,7 +124,7 @@
                 <input type="number" id="startBalanceInput" value="${currentPlan.startBalance}" onchange="updateBalance(this.value)" step="1">
               </div>
             </div>
-            <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${getNextMonthName(currentPlan.month)}</button>
+            <button class="btn btn-primary btn-small" onclick="showCopyModal()">Copy</button>
             <div class="more-controls">
               <button class="btn btn-primary btn-small" onclick="showPieChart()" title="Pie Chart">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
@@ -487,7 +463,7 @@
           </div>
         </div>
         <div class="modal-actions modal-actions-center">
-          <button class="btn btn-primary btn-small" onclick="duplicateToNextMonth()">Copy to ${getNextMonthName(currentPlan.month)}</button>
+          <button class="btn btn-primary btn-small" onclick="showCopyModal()">Copy</button>
         </div>
         <div class="modal-actions modal-actions-center">
           <button class="btn btn-primary btn-small" onclick="hideModal()">Close</button>
@@ -816,7 +792,7 @@
     }
 
     // Init
-    initDatePickers();
+    
     initAccountPanel();
     loadPlansList().then(async () => {
       // Auto-load latest plan
@@ -829,3 +805,19 @@
       }
     });
 
+
+
+    function getTodayMonthId() { const d=new Date(); return `${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`; }
+    function getNextMonthFromToday() { return getNextMonth(getTodayMonthId()); }
+    function showCreatePlanModal(){ showModal(`<h3>New Plan</h3><div class="modal-actions" style="justify-content:center;"><button class="btn btn-primary" onclick="showCreateCustomPlanModal()">Custom</button><button class="btn btn-primary" onclick="showCreateDatedPlanModal()">Dated</button></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button></div>`);} 
+    function showCreateCustomPlanModal(){ showModal(`<h3>Custom Plan</h3><label>Plan Name</label><input id="customPlanName" type="text" placeholder="e.g. Vacation"><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCreateCustomPlan()">Create</button></div>`);} 
+    async function submitCreateCustomPlan(){ const n=document.getElementById("customPlanName").value.trim(); if(!n) return alert("Enter a plan name"); try { await createPlanById(`custom:${n}`); hideModal(); } catch(e){ alert(e.message);} }
+    function showCreateDatedPlanModal(){ const now=new Date(); showModal(`<h3>Dated Plan</h3><div class="date-picker"><span class="select-wrapper"><select id="modalPlanMonth">${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${(i+1===now.getMonth()+1)?"selected":""}>${m}</option>`).join("")}</select></span><span class="select-wrapper"><select id="modalPlanYear">${Array.from({length:10},(_,i)=>now.getFullYear()-2+i).map(y=>`<option value="${y}" ${y===now.getFullYear()?"selected":""}>${y}</option>`).join("")}</select></span></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCreateDatedPlan()">Create</button></div>`);} 
+    async function submitCreateDatedPlan(){ const id=`${document.getElementById("modalPlanMonth").value}.${document.getElementById("modalPlanYear").value}`; try{ await createPlanById(id); hideModal(); } catch(e){ alert(e.message);} }
+    function showCopyModal(){ if(!currentPlan) return; showModal(`<h3>Copy Plan</h3><div class="modal-actions" style="justify-content:center;flex-wrap:wrap;"><button class="btn btn-primary" onclick="copyToNextMonth()">Next Month</button><button class="btn btn-primary" onclick="showCopySpecificDateModal()">Specific Date</button><button class="btn btn-primary" onclick="showCopyCustomModal()">Custom</button></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button></div>`);} 
+    async function copyToNextMonth(){ try{ await duplicatePlanTo(getNextMonthFromToday()); } catch(e){ alert(e.message);} }
+    function showCopySpecificDateModal(){ const now=new Date(); showModal(`<h3>Copy to Specific Date</h3><div class="date-picker"><span class="select-wrapper"><select id="copyMonth">${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${(i+1===now.getMonth()+1)?"selected":""}>${m}</option>`).join("")}</select></span><span class="select-wrapper"><select id="copyYear">${Array.from({length:10},(_,i)=>now.getFullYear()-2+i).map(y=>`<option value="${y}" ${y===now.getFullYear()?"selected":""}>${y}</option>`).join("")}</select></span></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCopySpecificDate()">Copy</button></div>`);} 
+    async function submitCopySpecificDate(){ const id=`${document.getElementById("copyMonth").value}.${document.getElementById("copyYear").value}`; try{ await duplicatePlanTo(id);} catch(e){ alert(e.message);} }
+    function showCopyCustomModal(){ showModal(`<h3>Copy to Custom Plan</h3><label>Plan Name</label><input id="copyCustomName" type="text" placeholder="e.g. Emergency"><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCopyCustom()">Copy</button></div>`);} 
+    async function submitCopyCustom(){ const n=document.getElementById("copyCustomName").value.trim(); if(!n) return alert("Enter a plan name"); try{ await duplicatePlanTo(`custom:${n}`);} catch(e){ alert(e.message);} }
+    window.showCreatePlanModal=showCreatePlanModal; window.showCopyModal=showCopyModal;

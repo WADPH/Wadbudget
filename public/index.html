@@ -17,13 +17,8 @@
     <div class="plans-list" id="plansList"></div>
     <div class="new-plan-section">
       <h3>New Plan</h3>
-      <div class="date-picker" id="newPlanDatePicker">
-        <span class="select-wrapper"><select id="newPlanMonth"></select></span>
-        <span class="select-wrapper"><select id="newPlanYear"></select></span>
-      </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
-        <button class="btn btn-primary btn-small" onclick="createFromTemplate()" style="flex:1;">From Template</button>
-        <button class="btn btn-success btn-small" onclick="createEmptyPlan()" style="width:36px;padding:6px 10px;font-size:18px;" title="Create empty plan">+</button>
+        <button class="btn btn-success btn-small" onclick="showCreatePlanModal()" style="width:36px;padding:6px 10px;font-size:18px;" title="Create plan">+</button>
       </div>
     </div>
     <div class="account-panel" id="accountPanel">

@@ -51,6 +51,9 @@ export function savePlan(plan) {
 export function renamePlan(oldMonth, newMonth) {
   const oldPath = getPlanPath(oldMonth);
   const newPath = getPlanPath(newMonth);
+  if (fs.existsSync(newPath)) {
+    throw new Error("Plan already exists");
+  }
   if (fs.existsSync(oldPath)) {
     fs.renameSync(oldPath, newPath);
   }
