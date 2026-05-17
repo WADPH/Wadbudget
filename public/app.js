@@ -67,12 +67,16 @@
     }
 
     function isDatePlanId(id) { return /^\d{2}\.\d{4}$/.test(id); }
+    function isCustomPlanId(id) { return id.startsWith('custom:'); }
+    function toCustomPlanId(name) { return `custom:${name}`; }
+    function customNameFromPlanId(id) { return isCustomPlanId(id) ? id.slice(7) : id; }
 
     function formatMonth(monthStr) {
       if (isDatePlanId(monthStr)) {
         const [m, y] = monthStr.split(".");
         return `${MONTHS[parseInt(m) - 1]} ${y}`;
       }
+      if (isCustomPlanId(monthStr)) return customNameFromPlanId(monthStr);
       return monthStr;
     }
 
@@ -106,6 +110,7 @@
 
       const [pm, py] = currentPlan.month.split('.');
       const isDatePlan = isDatePlanId(currentPlan.month);
+      const customPlanName = isCustomPlanId(currentPlan.month) ? customNameFromPlanId(currentPlan.month) : currentPlan.month;
 
       let html = `
         <div class="header">
@@ -116,6 +121,10 @@
             <span class="select-wrapper"><select id="planYear" onchange="renameCurrentPlan()">
               ${Array.from({length:10}, (_,i) => new Date().getFullYear()-2+i).map(y => `<option value="${y}" ${y==py?'selected':''}>${y}</option>`).join('')}
             </select></span>
+          </div>
+          <div style="${isDatePlan ? 'display:none;' : 'display:flex;align-items:center;gap:8px;'}">
+            <label for="customPlanNameInput" style="color:#aaa;font-size:14px;">Plan:</label>
+            <input id="customPlanNameInput" type="text" value="${escHtml(customPlanName)}" onchange="renameCurrentPlanCustom()" style="min-width:220px;">
           </div>
           <div class="controls">
             <div class="start-balance">
@@ -323,6 +332,40 @@
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newMonth })
       });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Failed to rename plan');
+        renderPlan();
+        return;
+      }
+      const data = await res.json();
+      currentPlan = data.plan;
+      currentCalc = data.calc;
+      renderPlan();
+      loadPlansList();
+    }
+
+    async function renameCurrentPlanCustom() {
+      const input = document.getElementById('customPlanNameInput');
+      if (!input) return;
+      const raw = input.value.trim();
+      if (!raw) {
+        alert('Enter a plan name');
+        renderPlan();
+        return;
+      }
+      const newMonth = toCustomPlanId(raw);
+      if (newMonth === currentPlan.month) return;
+      const res = await fetch(`${API}/plan/${encodeURIComponent(currentPlan.month)}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newMonth })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || 'Failed to rename plan');
+        renderPlan();
+        return;
+      }
       const data = await res.json();
       currentPlan = data.plan;
       currentCalc = data.calc;
@@ -802,7 +845,7 @@
     function getNextMonthFromToday() { return getNextMonth(getTodayMonthId()); }
     function showCreatePlanModal(){ showModal(`<h3>New Plan</h3><div class="modal-actions" style="justify-content:center;"><button class="btn btn-primary" onclick="showCreateCustomPlanModal()">Custom</button><button class="btn btn-primary" onclick="showCreateDatedPlanModal()">Dated</button></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button></div>`);} 
     function showCreateCustomPlanModal(){ showModal(`<h3>Custom Plan</h3><label>Plan Name</label><input id="customPlanName" type="text" placeholder="e.g. Vacation"><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCreateCustomPlan()">Create</button></div>`);} 
-    async function submitCreateCustomPlan(){ const n=document.getElementById("customPlanName").value.trim(); if(!n) return alert("Enter a plan name"); try { await createPlanById(`custom:${n}`); hideModal(); } catch(e){ alert(e.message);} }
+    async function submitCreateCustomPlan(){ const n=document.getElementById("customPlanName").value.trim(); if(!n) return alert("Enter a plan name"); try { await createPlanById(toCustomPlanId(n)); hideModal(); } catch(e){ alert(e.message);} }
     function showCreateDatedPlanModal(){ const now=new Date(); showModal(`<h3>Dated Plan</h3><div class="date-picker"><span class="select-wrapper"><select id="modalPlanMonth">${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${(i+1===now.getMonth()+1)?"selected":""}>${m}</option>`).join("")}</select></span><span class="select-wrapper"><select id="modalPlanYear">${Array.from({length:10},(_,i)=>now.getFullYear()-2+i).map(y=>`<option value="${y}" ${y===now.getFullYear()?"selected":""}>${y}</option>`).join("")}</select></span></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCreateDatedPlan()">Create</button></div>`);} 
     async function submitCreateDatedPlan(){ const id=`${document.getElementById("modalPlanMonth").value}.${document.getElementById("modalPlanYear").value}`; try{ await createPlanById(id); hideModal(); } catch(e){ alert(e.message);} }
     function showCopyModal(){ if(!currentPlan) return; showModal(`<h3>Copy Plan</h3><div class="modal-actions" style="justify-content:center;flex-wrap:wrap;"><button class="btn btn-primary" onclick="copyToNextMonth()">Next Month</button><button class="btn btn-primary" onclick="showCopySpecificDateModal()">Specific Date</button><button class="btn btn-primary" onclick="showCopyCustomModal()">Custom</button></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button></div>`);} 
@@ -810,5 +853,5 @@
     function showCopySpecificDateModal(){ const now=new Date(); showModal(`<h3>Copy to Specific Date</h3><div class="date-picker"><span class="select-wrapper"><select id="copyMonth">${MONTHS.map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}" ${(i+1===now.getMonth()+1)?"selected":""}>${m}</option>`).join("")}</select></span><span class="select-wrapper"><select id="copyYear">${Array.from({length:10},(_,i)=>now.getFullYear()-2+i).map(y=>`<option value="${y}" ${y===now.getFullYear()?"selected":""}>${y}</option>`).join("")}</select></span></div><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCopySpecificDate()">Copy</button></div>`);} 
     async function submitCopySpecificDate(){ const id=`${document.getElementById("copyMonth").value}.${document.getElementById("copyYear").value}`; try{ await duplicatePlanTo(id);} catch(e){ alert(e.message);} }
     function showCopyCustomModal(){ showModal(`<h3>Copy to Custom Plan</h3><label>Plan Name</label><input id="copyCustomName" type="text" placeholder="e.g. Emergency"><div class="modal-actions"><button class="btn" onclick="hideModal()">Cancel</button><button class="btn btn-success" onclick="submitCopyCustom()">Copy</button></div>`);} 
-    async function submitCopyCustom(){ const n=document.getElementById("copyCustomName").value.trim(); if(!n) return alert("Enter a plan name"); try{ await duplicatePlanTo(`custom:${n}`);} catch(e){ alert(e.message);} }
+    async function submitCopyCustom(){ const n=document.getElementById("copyCustomName").value.trim(); if(!n) return alert("Enter a plan name"); try{ await duplicatePlanTo(toCustomPlanId(n));} catch(e){ alert(e.message);} }
     window.showCreatePlanModal=showCreatePlanModal; window.showCopyModal=showCopyModal;
